@@ -7,9 +7,9 @@ class Dense:
     def __init__(self, in_features: int, out_features: int, 
                  w_init: str = "he_normal", b_init: str = "zeros", 
                  rng: Optional[np.random.Generator] = None) -> None:
-        self.in_features = in_features
-        self.out_features = out_features
-        self.is_training = True
+        self.in_features: Optional[int] = in_features
+        self.out_features: Optional[int] = out_features
+        self.is_training: bool = True
 
         # Initialize weights and biases
         if w_init not in get_initializer or b_init not in get_initializer:
@@ -74,6 +74,9 @@ class Dropout:
         self.p_drop: float = p_drop
         self.is_training: bool = True
         self.mask: Optional[Tensor] = None  # Cache
+        # Optional feature counts to satisfy Layer protocol
+        self.in_features: Optional[int] = None
+        self.out_features: Optional[int] = None
 
     def forward(self, X: Tensor, training: bool = True) -> Tensor:
         if training:
@@ -111,6 +114,9 @@ class Flatten:
     def __init__(self) -> None:
         self.is_training: bool = True
         self.input_shape: Optional[Tuple[int, ...]] = None  # Cache
+        # Optional feature counts to satisfy Layer protocol
+        self.in_features: Optional[int] = None
+        self.out_features: Optional[int] = None
 
     def forward(self, X: Tensor, training: bool = True) -> Tensor:
         if training:
