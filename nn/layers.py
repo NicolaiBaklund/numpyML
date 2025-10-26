@@ -5,21 +5,22 @@ from .initializers import get_initializer
 
 class Dense:
     def __init__(self, in_features: int, out_features: int, 
-                 w_init: str = "he_normal", b_init: str = "zeros", 
+                 w_init: str = "he_normal",  
                  rng: Optional[np.random.Generator] = None) -> None:
         self.in_features: Optional[int] = in_features
         self.out_features: Optional[int] = out_features
         self.is_training: bool = True
 
         # Initialize weights and biases
-        if w_init not in get_initializer or b_init not in get_initializer:
-            raise ValueError(f"Unknown initializer: {w_init} or {b_init}")
+        if w_init not in get_initializer:
+            raise ValueError(f"Unknown initializer: {w_init}")
         
         w_initializer: Callable[..., Tensor] = get_initializer[w_init]
-        b_initializer: Callable[..., Tensor] = get_initializer[b_init]
+
 
         self.W: Tensor = w_initializer((in_features, out_features), rng=rng)
-        self.b: Tensor = b_initializer((out_features,), rng=rng)
+        self.b: Tensor = np.zeros((out_features,), dtype=self.W.dtype)
+
 
         # initialize grads
         self.dW: Tensor = np.zeros_like(self.W)
@@ -32,7 +33,7 @@ class Dense:
         # output = (batch_size, input_size) @ (input_size, output_size) + (output_size) = (batch_size, output_size)
         Y = X @ self.W + self.b
         # Cache X if training
-        if training:
+        if training and self.is_training:
             self.X = X
         return Y # output
 
@@ -43,9 +44,9 @@ class Dense:
 
         # Gradients, copyto avoids reallocation
         # dW: (in, batch) @ (batch, out) = (in, out)
-        np.copyto(self.dW, X.T @ dY)
+        self.dW += X.T @ dY
         # db: sum over batch -> (out,)
-        np.copyto(self.db, dY.sum(axis=0))
+        self.db += dY.sum(axis=0)
         # dX: (batch, out) @ (out, in) -> (batch, in)
         dX = dY @ self.W.T
         return dX
@@ -79,7 +80,7 @@ class Dropout:
         self.out_features: Optional[int] = None
 
     def forward(self, X: Tensor, training: bool = True) -> Tensor:
-        if training:
+        if training and self.is_training:
             # Create dropout mask, if value < p_drop, set to 0
             # Scale to keep expected value the same, dont want the weights to learn smaller values
             self.mask = (np.random.rand(*X.shape) >= self.p_drop).astype(X.dtype) / (1.0 - self.p_drop)
@@ -119,7 +120,7 @@ class Flatten:
         self.out_features: Optional[int] = None
 
     def forward(self, X: Tensor, training: bool = True) -> Tensor:
-        if training:
+        if training and self.is_training:
             self.input_shape = X.shape  # Cache original shape
         batch_size = X.shape[0]
         return X.reshape(batch_size, -1)  # Flatten all but batch dimension
