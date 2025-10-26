@@ -4,7 +4,7 @@ import numpy as np
 
 
 
-class CrossEntropyLoss:
+class CrossEntropyLossWithLogits:
     """ 
     Cross-Entropy Loss with Softmax
     Combines softmax activation and cross-entropy loss in a numerically stable way.
