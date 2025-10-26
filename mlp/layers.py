@@ -1,5 +1,5 @@
 from .types import Layer, Tensor
-from typing import List, Optional
+from typing import List, Optional, Tuple
 import numpy as np
 
 class Dense:
@@ -17,7 +17,7 @@ class Dense:
         self.db: Tensor = np.zeros_like(self.b)
 
         # input cache
-        self.X: Tensor | None = None
+        self.X: Optional[Tensor] = None
 
     def forward(self, X: Tensor, training: bool = True) -> Tensor:
         # output = (batch_size, input_size) @ (input_size, output_size) + (output_size) = (batch_size, output_size)
@@ -124,4 +124,5 @@ class Flatten:
         self.is_training = True
 
     def eval(self) -> None:
-        self.is_training = False|
+        self.is_training = False
+
