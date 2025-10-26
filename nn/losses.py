@@ -97,3 +97,52 @@ class MSELoss:
         return (self._y_pred - self._y_true) / self._batch
 
 
+from .types import Tensor
+from typing import Optional
+import numpy as np
+
+class BinaryCrossEntropyWithLogits:
+    """Binary cross-entropy with logits (numerically stable).
+
+    Forward expects:
+      logits: shape (B,) or (B, 1)  (raw model outputs)
+      y:      shape (B,) or (B, 1)  (0 or 1 floats)
+
+    Returns scalar loss (float). Backward returns gradient shape same as logits.
+    """
+    def __init__(self) -> None:
+        self._logits: Optional[Tensor] = None
+        self._y: Optional[Tensor] = None
+        self._batch: Optional[int] = None
+
+    def forward(self, logits: Tensor, y: Tensor, training: bool = True) -> float:
+        # flatten shapes to (B,)
+        logits = logits.reshape(-1)
+        y = y.reshape(-1).astype(logits.dtype)
+
+        # numerically stable per-element BCE with logits
+        # loss_i = max(z,0) - z*y + log(1 + exp(-abs(z)))
+        z = logits
+        max_z0 = np.maximum(z, 0.0)
+        log_term = np.log1p(np.exp(-np.abs(z)))  # log(1+exp(-|z|))
+        per_example = max_z0 - z * y + log_term
+        loss = per_example.mean()
+
+        if training:
+            self._logits = z
+            self._y = y
+            self._batch = z.shape[0]
+
+        return float(loss)
+
+    def backward(self) -> Tensor:
+        assert self._logits is not None and self._y is not None and self._batch is not None, \
+            "BinaryCrossEntropyWithLogits.backward called before forward."
+        z = self._logits
+        y = self._y
+        B = self._batch
+
+        # sigmoid(z) - y  (shape (B,))
+        sig = 1.0 / (1.0 + np.exp(-z))
+        grad = (sig - y) / B
+        return grad.reshape((-1, 1))  # reshape to column if upstream expects (B,1)

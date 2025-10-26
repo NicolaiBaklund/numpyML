@@ -1,1 +1,65 @@
-data/
+
+.DS_Store
+Thumbs.db
+
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.env
+.envrc
+venv/
+env/
+.venv/
+ENV/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDEs
+.vscode/
+.idea/
+
+# Logs
+*.log
+logs/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+
+# Python type/checker caches
+.mypy_cache/
+.pytest_cache/
+.cache/
+
+# Data files - ignore common large/binary data formats everywhere
+*.csv
+*.tsv
+*.jsonl
+*.json.gz
+*.json
+*.npy
+*.npz
+*.h5
+*.hdf5
+*.pkl
+*.pickle
+*.sqlite
+*.db
+*.parquet
+*.feather
+*.ckpt
+
+# Keep `data/` directory for code (py, ipynb) but ignore data files inside it
+# This lets you commit scripts/notebooks in `data/` while ignoring raw data.
+data/**
+!data/*.py
+!data/*.ipynb
+!data/.gitkeep
+
+# Other common files
+.DS_Store

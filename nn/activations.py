@@ -13,6 +13,9 @@ class ReLU:
         self.is_training: bool = True
         # input cache, mask for backward, derivative of each input element
         self.mask: Tensor | None = None
+        # Optional feature counts to satisfy Layer protocol
+        self.in_features: Optional[int] = None
+        self.out_features: Optional[int] = None
 
     def forward(self, X: Tensor, training: bool = True) -> Tensor:
         # ReLU activation: f(x) = max(0, x)
@@ -58,6 +61,9 @@ class Sigmoid:
     def __init__(self) -> None:
         self.is_training: bool = True
         self.X: Optional[Tensor] = None # Cache
+        # Optional feature counts to satisfy Layer protocol
+        self.in_features: Optional[int] = None
+        self.out_features: Optional[int] = None
 
     def forward(self, X: Tensor, training: bool = True) -> Tensor:
         # Cache input if training

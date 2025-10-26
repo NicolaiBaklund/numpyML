@@ -49,7 +49,9 @@ class Sequential:
         for layer in self.layers:
             layer.eval()
     
-    def _validate_network(self, layers: List[Layer], input_dim: int):
+    def _validate_network(self, layers: List[Layer], input_dim: Optional[int]):
+        if input_dim is None:
+            raise ValueError("Input dimension is None, cannot validate network.")
         X = np.zeros((1, input_dim), dtype=np.float32)  
         for i, layer in enumerate(layers):
             try:
