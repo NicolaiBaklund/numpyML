@@ -20,7 +20,7 @@ class ReLU:
     def forward(self, X: Tensor, training: bool = True) -> Tensor:
         # ReLU activation: f(x) = max(0, x)
         Y = np.maximum(0, X)
-        if training:
+        if training and self.is_training:
             # Cache mask for backward, 1 where X>0, else 0
             self.mask = (X > 0).astype(X.dtype)
         return Y
@@ -67,7 +67,7 @@ class Sigmoid:
 
     def forward(self, X: Tensor, training: bool = True) -> Tensor:
         # Cache input if training
-        if training:
+        if training and self.is_training:
             self.X = X
         return sigmoid(X)
     def backward(self, dY: Tensor) -> Tensor:

@@ -97,52 +97,58 @@ class MSELoss:
         return (self._y_pred - self._y_true) / self._batch
 
 
-from .types import Tensor
-from typing import Optional
-import numpy as np
-
 class BinaryCrossEntropyWithLogits:
     """Binary cross-entropy with logits (numerically stable).
 
-    Forward expects:
-      logits: shape (B,) or (B, 1)  (raw model outputs)
-      y:      shape (B,) or (B, 1)  (0 or 1 floats)
+    Expected shapes:
+      - logits: (B,) or (B, 1)
+      - y:      (B,) or (B, 1) with values in {0, 1} or [0, 1]
 
-    Returns scalar loss (float). Backward returns gradient shape same as logits.
+    forward returns a scalar float loss. backward returns dL/dlogits with the
+    same shape as `logits` was provided (column vector if (B,1) was passed).
     """
+
     def __init__(self) -> None:
         self._logits: Optional[Tensor] = None
         self._y: Optional[Tensor] = None
         self._batch: Optional[int] = None
+        self._return_column: bool = True
 
     def forward(self, logits: Tensor, y: Tensor, training: bool = True) -> float:
-        # flatten shapes to (B,)
-        logits = logits.reshape(-1)
-        y = y.reshape(-1).astype(logits.dtype)
+        # Remember whether logits were column-shaped to mirror it in backward
+        self._return_column = (logits.ndim == 2 and logits.shape[1] == 1)
 
-        # numerically stable per-element BCE with logits
-        # loss_i = max(z,0) - z*y + log(1 + exp(-abs(z)))
-        z = logits
+        # Flatten to (B,) for stable math
+        z = logits.reshape(-1)
+        y = y.reshape(-1).astype(z.dtype)
+
+        # Stable BCE with logits: max(z,0) - z*y + log(1 + exp(-|z|))
         max_z0 = np.maximum(z, 0.0)
-        log_term = np.log1p(np.exp(-np.abs(z)))  # log(1+exp(-|z|))
+        log_term = np.log1p(np.exp(-np.abs(z)))
         per_example = max_z0 - z * y + log_term
-        loss = per_example.mean()
+        loss = float(per_example.mean())
 
         if training:
             self._logits = z
             self._y = y
             self._batch = z.shape[0]
 
-        return float(loss)
+        return loss
 
     def backward(self) -> Tensor:
-        assert self._logits is not None and self._y is not None and self._batch is not None, \
-            "BinaryCrossEntropyWithLogits.backward called before forward."
         z = self._logits
         y = self._y
         B = self._batch
+        assert z is not None and y is not None and B is not None, (
+            "BinaryCrossEntropyWithLogits.backward called before forward."
+        )
 
-        # sigmoid(z) - y  (shape (B,))
+        # dL/dz = (sigmoid(z) - y) / B
         sig = 1.0 / (1.0 + np.exp(-z))
         grad = (sig - y) / B
-        return grad.reshape((-1, 1))  # reshape to column if upstream expects (B,1)
+
+        if self._return_column:
+            return grad.reshape((-1, 1))
+        return grad
+
+ 

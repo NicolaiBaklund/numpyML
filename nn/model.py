@@ -27,13 +27,13 @@ class Sequential:
             grad = layer.backward(grad)
         return grad # derivative of loss w.r.t input X, rarely used
     
-    def params(self) -> List[Tensor]:
+    def parameters(self) -> List[Tensor]:
         params: List[Tensor] = []
         for layer in self.layers:
             params.extend(layer.params())
         return params
-    
-    def grads(self) -> List[Tensor]:
+
+    def gradients(self) -> List[Tensor]:
         grads: List[Tensor] = []
         for layer in self.layers:
             grads.extend(layer.grads())

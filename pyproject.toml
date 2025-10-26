@@ -1,0 +1,10 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "numpyML"
+version = "0.0.1"
+description = "A minimal numpy-based ML library for teaching and experiments."
+readme = "README.md"
+requires-python = ">=3.8"

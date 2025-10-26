@@ -20,13 +20,13 @@ def calculate_fans(shape: Shape) -> Tuple[int, int]:
     return fan_in, fan_out
 
 # Fillers
-def zeros(shape: Shape, dtype=np.float32) -> Tensor:
+def zeros(shape: Shape, rng: Optional[np.random.Generator] = None, dtype=np.float32) -> Tensor:
     return np.zeros(shape, dtype=dtype)
 
-def ones(shape: Shape, dtype=np.float32) -> Tensor:
+def ones(shape: Shape, rng: Optional[np.random.Generator] = None, dtype=np.float32) -> Tensor:
     return np.ones(shape, dtype=dtype)
 
-def constant(shape: Shape, val: float, dtype=np.float32) -> Tensor:
+def constant(shape: Shape, val: float, rng: Optional[np.random.Generator] = None, dtype=np.float32) -> Tensor:
     return np.full(shape, val, dtype=dtype)
 
 def small_normal(shape: Shape, std: float = 0.01, rng: Optional[np.random.Generator] = None,
@@ -137,9 +137,6 @@ def gain_for_activation(name: str, param: Optional[float] = None) -> float:
 
 
 get_initializer: Dict[str, Callable[..., Tensor]] = {
-    "zeros": zeros,
-    "ones": ones,
-    "constant": constant,
     "small_normal": small_normal,
     "glorot_uniform": glorot_uniform,
     "glorot_normal": glorot_normal,
