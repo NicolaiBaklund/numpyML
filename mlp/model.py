@@ -25,7 +25,7 @@ class Sequential:
         grad = dY
         for layer in reversed(self.layers):
             grad = layer.backward(grad)
-        return grad
+        return grad # derivative of loss w.r.t input X, rarely used
     
     def params(self) -> List[Tensor]:
         params: List[Tensor] = []

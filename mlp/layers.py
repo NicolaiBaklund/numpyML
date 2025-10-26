@@ -1,16 +1,25 @@
 from .types import Layer, Tensor
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Callable
 import numpy as np
+from .initializers import get_initializer
 
 class Dense:
-    def __init__(self, in_features: int, out_features: int) -> None:
+    def __init__(self, in_features: int, out_features: int, 
+                 w_init: str = "he_normal", b_init: str = "zeros", 
+                 rng: Optional[np.random.Generator] = None) -> None:
         self.in_features = in_features
         self.out_features = out_features
         self.is_training = True
 
-        # TODO: optimize initialization
-        self.W: Tensor = np.random.randn(in_features, out_features) * (1.0 / np.sqrt(in_features))
-        self.b: Tensor = np.zeros((out_features,), dtype=self.W.dtype)
+        # Initialize weights and biases
+        if w_init not in get_initializer or b_init not in get_initializer:
+            raise ValueError(f"Unknown initializer: {w_init} or {b_init}")
+        
+        w_initializer: Callable[..., Tensor] = get_initializer[w_init]
+        b_initializer: Callable[..., Tensor] = get_initializer[b_init]
+
+        self.W: Tensor = w_initializer((in_features, out_features), rng=rng)
+        self.b: Tensor = b_initializer((out_features,), rng=rng)
 
         # initialize grads
         self.dW: Tensor = np.zeros_like(self.W)
