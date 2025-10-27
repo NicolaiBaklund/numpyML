@@ -8,3 +8,8 @@ version = "0.0.1"
 description = "A minimal numpy-based ML library for teaching and experiments."
 readme = "README.md"
 requires-python = ">=3.8"
+
+
+
+[tool.setuptools]
+packages = { find = { where = ["."] } }
