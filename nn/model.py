@@ -69,7 +69,7 @@ class Sequential:
         """Return a serializable representation of architecture + parameters."""
         layers_state = []
         for layer in self.layers:
-            entry = {
+            entry: Dict[str, Any] = {
                 "class": layer.__class__.__name__,
                 "config": getattr(layer, "get_config", lambda: {})(),
                 "state": getattr(layer, "state_dict", lambda: {})(),
