@@ -31,8 +31,7 @@ model = model.Sequential([
     activations.ReLU(),
     layers.Dense(25, 10),
     activations.ReLU(),
-    layers.Dense(10, 1),
-    activations.Sigmoid()
+    layers.Dense(10, 1)
 ])
 
 loss_fn = losses.BinaryCrossEntropyWithLogits()
