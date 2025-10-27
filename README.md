@@ -20,3 +20,5 @@ The framework currently supports a simple sequential model.
 - plain SGD
 - Adam
 
+### Example
+
