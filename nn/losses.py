@@ -152,3 +152,31 @@ class BinaryCrossEntropyWithLogits:
         return grad
 
  
+
+class Huber:
+    def __init__(self, delta: float = 1.0) -> None:
+        self.delta = delta
+        self._y_true: Optional[Tensor] = None
+        self._y_pred: Optional[Tensor] = None
+        self._batch: Optional[int] = None
+    
+    def forward(self, y_pred: Tensor, y_true: Tensor, training: bool = True) -> float:
+        error = y_pred - y_true
+        abs_error = np.abs(error)
+        quadratic = np.minimum(abs_error, self.delta)
+        linear = abs_error - quadratic
+        loss = np.mean(0.5 * quadratic**2 + self.delta * linear)
+        if training:
+            self._y_true = y_true
+            self._y_pred = y_pred
+            self._batch = y_pred.shape[0]
+        return float(loss)
+    
+    def backward(self) -> Tensor:
+        assert self._y_true is not None and self._y_pred is not None, "Huber.backward called before forward."
+        error = self._y_pred - self._y_true
+        abs_error = np.abs(error)
+        grad = np.where(abs_error <= self.delta, error, self.delta * np.sign(error))
+        return grad / self._batch
+    
+    
