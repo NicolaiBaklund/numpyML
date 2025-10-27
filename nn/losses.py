@@ -1,5 +1,5 @@
 from .types import Tensor
-from typing import Optional, List
+from typing import Optional, List, cast
 import numpy as np
 
 
@@ -129,8 +129,10 @@ class BinaryCrossEntropyWithLogits:
         loss = float(per_example.mean())
 
         if training:
-            self._logits = z
-            self._y = y
+            # mypy can be picky about assigning ndarray to Optional[...] in some numpy stubs;
+            # use cast to make the intent explicit.
+            self._logits = cast(Optional[Tensor], z)
+            self._y = cast(Optional[Tensor], y)
             self._batch = z.shape[0]
 
         return loss

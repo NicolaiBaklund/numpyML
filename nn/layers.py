@@ -10,6 +10,8 @@ class Dense:
         self.in_features: Optional[int] = in_features
         self.out_features: Optional[int] = out_features
         self.is_training: bool = True
+        # remember initializer name for reconstruction
+        self.w_init: str = w_init
 
         # Initialize weights and biases
         if w_init not in get_initializer:
@@ -63,6 +65,24 @@ class Dense:
     def eval(self) -> None:
         self.is_training = False
 
+    # --- serialization helpers ---
+    def get_config(self) -> dict:
+        return {
+            "in_features": int(self.in_features) if self.in_features is not None else None,
+            "out_features": int(self.out_features) if self.out_features is not None else None,
+            "w_init": getattr(self, "w_init", "he_normal"),
+        }
+
+    def state_dict(self) -> dict:
+        return {"W": self.W.copy(), "b": self.b.copy()}
+
+    def load_state_dict(self, state: dict) -> None:
+        self.W = state["W"].copy()
+        self.b = state["b"].copy()
+        # reset grads
+        self.dW = np.zeros_like(self.W)
+        self.db = np.zeros_like(self.b)
+
 
 class Dropout:
     """
@@ -105,6 +125,16 @@ class Dropout:
     
     def eval(self) -> None:
         self.is_training = False
+        
+    # serialization helpers (stateless)
+    def get_config(self) -> dict:
+        return {"p_drop": float(self.p_drop)}
+
+    def state_dict(self) -> dict:
+        return {}
+
+    def load_state_dict(self, state: dict) -> None:
+        return
 
 
 class Flatten:
@@ -141,4 +171,14 @@ class Flatten:
 
     def eval(self) -> None:
         self.is_training = False
+    
+    # serialization helpers (stateless)
+    def get_config(self) -> dict:
+        return {}
+
+    def state_dict(self) -> dict:
+        return {}
+
+    def load_state_dict(self, state: dict) -> None:
+        return
 

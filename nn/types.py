@@ -1,5 +1,6 @@
 import numpy as np
 from typing import List, Tuple, Protocol, Optional
+from typing import Dict, Any
 
 Tensor = np.ndarray
 Shape = Tuple[int, ...]
@@ -32,4 +33,20 @@ class Layer(Protocol):
         ...
 
     def eval(self) -> None:
+        ...
+    
+    # Serialization / configuration helpers
+    def get_config(self) -> Dict[str, Any]:
+        """Return a JSON-serializable configuration describing this layer (stateless)."""
+        ...
+
+    def state_dict(self) -> Dict[str, Any]:
+        """Return a serializable mapping of parameters (typically numpy arrays)."""
+        ...
+
+    def load_state_dict(self, state: Dict[str, Any]) -> None:
+        """Load parameters from a state dict produced by `state_dict`.
+
+        Implementations should copy data from `state` into internal arrays.
+        """
         ...
