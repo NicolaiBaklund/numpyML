@@ -14,7 +14,9 @@ The framework currently supports a simple sequential model.
 - Mean Squared Error (MSE)
 - Cross-Entropy Loss on logits
 - BCE on logits
+- Huber (For RL-DQN)
 
 ### Optimizers
 - plain SGD
+- Adam
 
