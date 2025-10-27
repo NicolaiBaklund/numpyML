@@ -1,15 +1,12 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "numpyML"
+name = "numpyml"
 version = "0.0.1"
 description = "A minimal numpy-based ML library for teaching and experiments."
-readme = "README.md"
-requires-python = ">=3.8"
-
-
+requires-python = ">=3.10"
 
 [tool.setuptools]
 packages = { find = { where = ["."] } }
