@@ -2,7 +2,9 @@ from .types import Tensor, Layer
 from typing import List, Tuple, Optional
 import numpy as np
 from .activations import Sigmoid, ReLU
-from .layers import Dense
+from .layers import Dense, Dropout, Flatten
+from typing import Dict, Any
+import pickle
 
 
 class Sequential:
@@ -61,3 +63,58 @@ class Sequential:
                     f"Shape mismatch at layer {i} ({layer.__class__.__name__}). "
                     f"Expected something compatible with shape {X.shape}."
                 )
+
+    # --- serialization / copy helpers ---
+    def state_dict(self) -> Dict[str, Any]:
+        """Return a serializable representation of architecture + parameters."""
+        layers_state = []
+        for layer in self.layers:
+            entry = {
+                "class": layer.__class__.__name__,
+                "config": getattr(layer, "get_config", lambda: {})(),
+                "state": getattr(layer, "state_dict", lambda: {})(),
+            }
+            layers_state.append(entry)
+        return {"layers": layers_state}
+
+    def save(self, path: str) -> None:
+        """Save model architecture + parameters to a file (pickle)."""
+        with open(path, "wb") as f:
+            pickle.dump(self.state_dict(), f)
+
+    @classmethod
+    def from_state_dict(cls, state: Dict[str, Any]) -> "Sequential":
+        """Reconstruct a Sequential from a state dict (as returned by state_dict())."""
+        registry = {
+            "Dense": Dense,
+            "ReLU": ReLU,
+            "Sigmoid": Sigmoid,
+            "Dropout": Dropout,
+            "Flatten": Flatten,
+        }
+        layers: List[Layer] = []
+        for layer_entry in state["layers"]:
+            name = layer_entry["class"]
+            config = layer_entry.get("config", {}) or {}
+            state_blob = layer_entry.get("state", {}) or {}
+            if name not in registry:
+                raise ValueError(f"Unknown layer class in state: {name}")
+            LayerCls = registry[name]
+            kwargs = {k: v for k, v in config.items() if v is not None}
+            layer = LayerCls(**kwargs) if kwargs else LayerCls()
+            load_fn = getattr(layer, "load_state_dict", None)
+            if callable(load_fn):
+                load_fn(state_blob)
+            layers.append(layer)
+        return cls(layers)
+
+    @classmethod
+    def load(cls, path: str) -> "Sequential":
+        with open(path, "rb") as f:
+            state = pickle.load(f)
+        return cls.from_state_dict(state)
+
+    def copy(self) -> "Sequential":
+        """Return a deep copy of the network (new objects, same parameters)."""
+        state = self.state_dict()
+        return self.from_state_dict(state)

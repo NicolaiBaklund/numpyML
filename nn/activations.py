@@ -43,6 +43,16 @@ class ReLU:
     def eval(self) -> None:
         self.is_training = False
 
+    # serialization helpers (stateless)
+    def get_config(self) -> dict:
+        return {}
+
+    def state_dict(self) -> dict:
+        return {}
+
+    def load_state_dict(self, state: dict) -> None:
+        return
+
 
 def sigmoid(X: Tensor) -> Tensor:
     return 1/(1+np.exp(-X))
@@ -91,6 +101,16 @@ class Sigmoid:
 
     def eval(self) -> None:
         self.is_training = False
+
+    # serialization helpers (stateless)
+    def get_config(self) -> dict:
+        return {}
+
+    def state_dict(self) -> dict:
+        return {}
+
+    def load_state_dict(self, state: dict) -> None:
+        return
 
         
 
